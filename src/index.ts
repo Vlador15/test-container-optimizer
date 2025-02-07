@@ -1,9 +1,19 @@
+/**
+ * ContainerOptimizer испольуется для динамического отображения/скрытий блоков, входящих в допусим диапазон (`maxDisplayCount`)
+ */
 class ContainerOptimizer {
     container: HTMLElement; // рендер-контейнер
     stack: HTMLElement[]; // стек всех блоков
     maxDisplayCount: number; // сколько блоков можем отображать
     count: number; // счетчик блоков
 
+    /**
+     * Создаёт экземпляр ContainerOptimizer
+     * @constructor
+     * @this {ContainerOptimizer}
+     * @param {string} containerId — ID контейнера в DOM-дереве
+     * @param {number} maxDisplayCount — Ограничение видимых блоков в контейнере
+     * */
     constructor(containerId: string, maxDisplayCount: number = 5) {
         const container = document.getElementById(containerId);
         if (!container) throw new Error("Failed to find a container element.");
@@ -28,6 +38,9 @@ class ContainerOptimizer {
         }
     }
 
+    /**
+     * Проверяет наличие существующих блоков в контейнере и сохраняет их
+     * */
     initialize() {
         [...this.container.children].forEach(el => {
             this.stack.push(el as HTMLElement);
@@ -39,6 +52,9 @@ class ContainerOptimizer {
         });
     }
 
+    /**
+     * Добавляет новый блок в конец контейнера
+     * */
     addBlock(): void {
         const block = document.createElement("div");
         const newValue = this.count + 1;
@@ -54,7 +70,10 @@ class ContainerOptimizer {
             this.container.removeChild(this.stack[leftBorder]);
         }
     }
-
+    
+    /**
+     * Удаляет последний блок в контейнере
+     * */
     removeBlock(): void {
         if (this.stack.length === 0) return;
 
