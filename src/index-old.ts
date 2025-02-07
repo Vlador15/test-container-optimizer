@@ -1,40 +1,33 @@
+/*
 type TTask = {
     readonly value?: number
 }
 
-type TCursor = {
-    left: number;
-    right: number;
-}
-
-/**
+/!**
  * ContainerOptimizer испольуется для динамического отображения/скрытий блоков, входящих в допусим диапазон (`maxDisplayCount`)
- */
+ *!/
 class ContainerOptimizer {
     container: HTMLElement; // рендер-контейнер
+    stack: HTMLElement[]; // стек html-block'ов размерностью = 'maxDisplayCount'
     buffer: TTask[]; // хранение всех данных
     maxDisplayCount: number; // сколько блоков можем отображать
-    cursor: TCursor; // Указатель для границы справа
 
-    /**
+    /!**
      * Создаёт экземпляр ContainerOptimizer
      * @constructor
      * @this {ContainerOptimizer}
      * @param {string} containerId — ID контейнера в DOM-дереве
      * @param {number} maxDisplayCount — Ограничение видимых блоков в контейнере
      * @param {number} initState — Исходный массив с данными
-     * */
+     * *!/
     constructor(containerId: string, maxDisplayCount: number = 5, initState: TTask[] = []) {
         const container = document.getElementById(containerId);
         if (!container) throw new Error("Failed to find a container element.");
 
         this.container = container;
         this.maxDisplayCount = maxDisplayCount;
+        this.stack = [];
         this.buffer = initState;
-        this.cursor = {
-            left: 0,
-            right: maxDisplayCount - 1,
-        };
 
         // Проверка наличия элементов изначально в контейнере
         this.initialize();
@@ -51,86 +44,58 @@ class ContainerOptimizer {
         }
     }
 
-    /**
+    /!**
      * Проверяет наличие существующих блоков в контейнере и сохраняет их
-     * */
+     * *!/
     initialize() {
-        const children = [...this.container.children];
+        const childrens = [...this.container.children];
 
         // Добавляем в буфер исходные данные в нужном формате
-        this.buffer.unshift(...children.map(el => getObject(Number(el.textContent))));
+        this.buffer.unshift(...childrens.map(el => getObject(Number(el.textContent))));
 
-        // Заполняем блоками, если изначально меньше положенного
-        if (children.length > this.maxDisplayCount) return;
-
-        for (let i = children.length; i < this.maxDisplayCount; i++) {
-            const block = document.createElement("div");
-            if (this.buffer[i]) {
-                block.textContent = String(this.buffer[i].value ?? "-");
-
-            }
-            this.container.append(block);
-        }
-
-        this.log();
+        // Заполняем
         console.log(this.buffer);
     }
 
-    /**
+    /!**
      * Добавляет новый блок в конец контейнера
-     * */
+     * *!/
     addBlock(): void {
         const block = document.createElement("div");
-        this.cursor.left += 1;
-        this.cursor.right += 1;
+        const newValue = getObject();
 
-        let text = "-";
-        if (this.buffer[this.cursor.right]) {
-            text = String(this.buffer[this.cursor.right].value ?? "-");
-        }
-        block.textContent = String(text);
+        block.textContent = String(newValue);
         this.container.append(block);
+        this.stack.push(block);
 
-        // Динамически удаляем первый блок, не влезяющий в допустимый диапазон
-        this.container.removeChild(this.container.children[0]);
-        this.log();
+        // Динамически удаляем последний блок, не влезающий в диапазон maxDisplayCount
+        if (this.stack.length > this.maxDisplayCount) {
+            const leftBorder = this.stack.length - 1 - this.maxDisplayCount;
+            this.container.removeChild(this.stack[leftBorder]);
+        }
     }
 
-    /**
+    /!**
      * Удаляет последний блок в контейнере
-     * */
+     * *!/
     removeBlock(): void {
-        if (this.container.children.length === 0) return;
-        if (this.buffer.length === 0) return;
-        if (this.cursor.left === 0) return;
+        if (this.stack.length === 0) return;
 
-        this.cursor.left -= 1;
-        this.cursor.right -= 1;
-
-        const removeBlock = [...this.container.children].at(-1) as HTMLElement;
-        this.container.removeChild(removeBlock);
+        const removeBlock = this.stack.pop();
+        this.container.removeChild(removeBlock as HTMLElement);
 
         // Динамически добавляем блок в начало для заполнения диапазона
-        const block = document.createElement("div");
-        let text = "-";
-        if (this.buffer[this.cursor.left]) {
-            text = String(this.buffer[this.cursor.left].value ?? "-");
+        const leftBorder = this.stack.length - this.maxDisplayCount;
+        if (this.stack[leftBorder]) {
+            this.container.prepend(this.stack[leftBorder]);
         }
-        block.textContent = String(text);
-        this.container.prepend(block);
-        this.log();
     }
-
-    log() {
-        console.log(`Отображен участок: ${this.cursor.left}-${this.cursor.right} (из ${this.buffer.length} эл.)`);
-    }
-
 }
 
 
-/**
+/!**
  * Генерация рандомного блока
- * */
+ * *!/
 const getObject = (value?: number): TTask => {
     // Генерация объекта с известнными данными
     if (value) return {
@@ -146,5 +111,5 @@ const getObject = (value?: number): TTask => {
     };
 };
 
-const mock_blocks = Array.from({ length: 10000 }, getObject);
-const container = new ContainerOptimizer("container", 5, mock_blocks);
+const mock_blocks = Array.from({ length: 100 }, getObject);
+const container = new ContainerOptimizer("container", 5, mock_blocks);*/
